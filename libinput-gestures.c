@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 201609L
 
+#include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -44,8 +45,8 @@ void monitor_events()
 	};
 	struct event_state state;
 
-	li = libinput_path_create_context(&interface, NULL);
-	libinput_path_add_device(li, "/dev/input/event11");
+	li = libinput_udev_create_context(&interface, NULL, udev_new());
+	libinput_udev_assign_seat(li, get_seat());
 	libinput_dispatch(li);
 
 	while (1) {
@@ -310,3 +311,12 @@ void print_gesture(struct libinput_event_gesture *gesture)
 	printf("\n");
 }
 
+char* get_seat()
+{
+	char* dst = getenv("XDG_SEAT");
+	if (dst == NULL) {
+		printf("Could not read `XDG_SEAT` env variable, using `seat0`\n");
+		dst = "seat0";
+	}
+	return dst;
+}

@@ -9,6 +9,7 @@ struct gesture_breakdown;
 
 void try_input_sgid();
 void try_root_suid();
+char* get_seat(void);
 static int open_restricted(const char *path, int flags, void *user_data);
 static void close_restricted(int fd, void *user_data);
 void print_gesture(struct libinput_event_gesture *gesture);

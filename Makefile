@@ -13,7 +13,7 @@
 # details.
 
 libinput-gestures: libinput-gestures.c libinput-gestures.h
-	gcc libinput-gestures.c -o libinput-gestures `pkg-config --cflags --libs libinput`
+	gcc libinput-gestures.c -o libinput-gestures `pkg-config --cflags --libs libinput libudev`
 	sudo chown root:input libinput-gestures
 	sudo chmod g+s libinput-gestures
 	sudo chmod u+s libinput-gestures
