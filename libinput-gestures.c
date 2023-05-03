@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <libudev.h>
 #include <sys/types.h>
@@ -13,6 +14,7 @@
 #include <errno.h>
 
 #include "libinput-gestures.h"
+#include "config.h"
 
 int main(int argc, char* argv[]){
 	printf("Rewrite of libinput-gestures using suid/sgid\n");
@@ -145,6 +147,7 @@ struct event_state handle_swipe_end(struct libinput_event_gesture *gesture, stru
 {
 	print_gesture(gesture);
 	printf("Cumulative dx=%f dy=%f (started at %d)\n", state.s.swipe.cumulative_dx, state.s.swipe.cumulative_dy, state.start_time);
+    call_action(SWIPE, libinput_event_gesture_get_finger_count(gesture), ON_END);
 	return new_state();
 }
 
@@ -152,12 +155,71 @@ struct event_state handle_pinch_end(struct libinput_event_gesture *gesture, stru
 {
 	print_gesture(gesture);
 	printf("Final scale = %f (started at %d)\n", state.s.pinch.last_scale, state.start_time);
+    call_action(PINCH, libinput_event_gesture_get_finger_count(gesture), ON_END);
 	return new_state();
 }
 
 struct event_state handle_hold_end(struct libinput_event_gesture *gesture, struct event_state state)
 {
+    call_action(HOLD, libinput_event_gesture_get_finger_count(gesture), ON_END);
 	return new_state();
+}
+
+void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type)
+{
+    struct action *action = match_action(gesture_type, fingers, action_type);
+    if (action != NULL) {
+        const char **args = (const char**)action->cmd;
+        #ifdef DEBUG
+            printf("Matched action : ");
+            char *arg = NULL;
+            int i = 0;
+            do {
+                arg = (char*)(args[i]);
+                if (arg != NULL) {
+                    printf("%s ", arg);
+                }
+                i++;
+            } while (arg != NULL);
+            printf("\n");
+        #endif
+        spawn(args);
+    }
+}
+
+struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type)
+{
+    int actions_len = sizeof(user_actions)/sizeof(struct action);
+    int i = 0;
+    struct action action;
+    for (i=0 ; i<actions_len; i++) {
+        action = user_actions[i];
+        if (action.gesture == gesture_type &&
+                action.fingers == fingers &&
+                action.type == action_type
+        ) {
+            return (struct action*)&user_actions[i];
+        }
+    }
+    return NULL;
+}
+
+void spawn(const char **args)
+// From suckless dwm
+{
+	struct sigaction sa;
+
+	if (fork() == 0) {
+		setsid();
+
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sa.sa_handler = SIG_DFL;
+		sigaction(SIGCHLD, &sa, NULL);
+
+		execvp(args[0], (char**)args);
+		die("dwm: execvp '%s' failed:", args[0]);
+	}
 }
 
 struct event_state new_state()
@@ -177,6 +239,9 @@ void try_input_sgid() {
 		printf("Could not set gid to input group (id=%d)\n", gid);
 	} else {
 		printf("Successfully set gid to input group (id=%d)\n", gid);
+        if (seteuid(getuid()) != 0) { // Restore euid
+            printf("Could not restore euid to original uid, this max cause problems for spawning commands\n");
+        }
 	}
 }
 
@@ -317,4 +382,23 @@ char* get_seat()
 		dst = "seat0";
 	}
 	return dst;
+}
+
+void die(const char *fmt, ...)
+// From suckless dwm
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
+		fputc(' ', stderr);
+		perror(NULL);
+	} else {
+		fputc('\n', stderr);
+	}
+
+	exit(1);
 }

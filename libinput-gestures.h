@@ -4,11 +4,16 @@
 
 #include <libinput.h>
 
+// Used in config.h
+#define CMD(...) (const char*[]){__VA_ARGS__, NULL}
+
 struct gesture_breakdown;
 
 void try_input_sgid();
 void try_root_suid();
 char* get_seat(void);
+void spawn(const char **args);
+void die(const char *fmt, ...);
 static int open_restricted(const char *path, int flags, void *user_data);
 static void close_restricted(int fd, void *user_data);
 void print_gesture(struct libinput_event_gesture *gesture);
@@ -67,4 +72,20 @@ struct event_state {
 	union event_inner_state s;
 };
 
+enum action_type {
+	ERR_ACTION_TYPE,
+	REPEAT,
+	ON_END,
+	ON_THRESHOLD,
+};
+
+struct action {
+	enum gesture_type gesture;
+	int fingers;
+	enum action_type type;
+	const void *cmd;
+};
+
+void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type);
+struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type);
 #endif
