@@ -82,30 +82,30 @@ struct event_state {
 	union event_inner_state s;
 };
 
-enum action_type {
-	ERR_ACTION_TYPE,
+enum trigger_type {
+	ERR_TRIGGER_TYPE,
 	REPEAT,
 	ON_END,
 	ON_THRESHOLD,
 };
 
-struct action_config {
+struct trigger_config {
     float threshold;
     uint32_t min_duration;
     uint32_t max_duration;
 };
 
-struct action {
+struct trigger {
 	enum gesture_type gesture;
     enum swipe_direction swipe_direction;
 	int fingers;
-	enum action_type type;
-    struct action_config config;
+	enum trigger_type type;
+    struct trigger_config config;
 	const void *cmd;
 };
 
-void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t start_time, enum swipe_direction direction, float amount);
-struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount);
-int check_threshold(enum gesture_type gesture_type, struct action action, float amount);
+void call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t start_time, enum swipe_direction direction, float amount);
+struct trigger* match_trigger(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount);
+int check_threshold(enum gesture_type gesture_type, struct trigger trigger, float amount);
 struct swipe_descriptor get_swipe_desriptor(struct event_state state);
 #endif

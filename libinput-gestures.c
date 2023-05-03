@@ -199,13 +199,13 @@ struct swipe_descriptor get_swipe_desriptor(struct event_state state)
     return descriptor;
 }
 
-void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount)
+void call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
 {
-    struct action *action = match_action(gesture_type, fingers, action_type, duration, direction, amount);
-    if (action != NULL) {
-        const char **args = (const char**)action->cmd;
+    struct trigger *trigger = match_trigger(gesture_type, fingers, trigger_type, duration, direction, amount);
+    if (trigger != NULL) {
+        const char **args = (const char**)trigger->cmd;
         #ifdef DEBUG
-            printf("Matched action : ");
+            printf("Matched trigger : ");
             char *arg = NULL;
             int i = 0;
             do {
@@ -221,41 +221,41 @@ void call_action(enum gesture_type gesture_type, int fingers, enum action_type a
     }
 }
 
-struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount)
+struct trigger* match_trigger(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
 {
-    int actions_len = sizeof(user_actions)/sizeof(struct action);
+    int triggers_len = sizeof(user_triggers)/sizeof(struct trigger);
     int i = 0;
-    struct action action;
-    for (i=0 ; i<actions_len; i++) {
-        action = user_actions[i];
-        if (action.gesture == gesture_type &&
-                action.fingers == fingers &&
-                action.type == action_type &&
+    struct trigger trigger;
+    for (i=0 ; i<triggers_len; i++) {
+        trigger = user_triggers[i];
+        if (trigger.gesture == gesture_type &&
+                trigger.fingers == fingers &&
+                trigger.type == trigger_type &&
                 (direction == NONE ||
-                    action.swipe_direction == NONE ||
-                    action.swipe_direction == direction
+                    trigger.swipe_direction == NONE ||
+                    trigger.swipe_direction == direction
                 ) &&
-                (action.config.min_duration <= 0 || action.config.min_duration <= duration) &&
-                (action.config.max_duration <= 0 || action.config.max_duration >= duration) &&
-                check_threshold(gesture_type, action, amount)
+                (trigger.config.min_duration <= 0 || trigger.config.min_duration <= duration) &&
+                (trigger.config.max_duration <= 0 || trigger.config.max_duration >= duration) &&
+                check_threshold(gesture_type, trigger, amount)
         ) {
-            return (struct action*)&user_actions[i];
+            return (struct trigger*)&user_triggers[i];
         }
     }
     return NULL;
 }
 
-int check_threshold(enum gesture_type gesture_type, struct action action, float amount)
+int check_threshold(enum gesture_type gesture_type, struct trigger trigger, float amount)
 {
-    if (action.config.threshold == 0) return 1;
+    if (trigger.config.threshold == 0) return 1;
 
     if (gesture_type == SWIPE) {
-        return (amount >= action.config.threshold);
+        return (amount >= trigger.config.threshold);
     } else if (gesture_type == PINCH) {
-        if (action.config.threshold < 1) {
-            return (amount <= action.config.threshold);
+        if (trigger.config.threshold < 1) {
+            return (amount <= trigger.config.threshold);
         } else {
-            return (amount >= action.config.threshold);
+            return (amount >= trigger.config.threshold);
         }
     } else {
         return 1;
