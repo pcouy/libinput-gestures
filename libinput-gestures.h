@@ -1,7 +1,6 @@
 #ifndef _INCLUDED_INPUT_GESTURES
 #define _INCLUDED_INPUT_GESTURES
 #include <sys/types.h>
-#define DEBUG
 
 #include <libinput.h>
 

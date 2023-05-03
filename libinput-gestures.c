@@ -127,11 +127,9 @@ struct event_state dispatch_gesture(
 struct event_state handle_swipe_update(struct libinput_event_gesture *gesture, struct event_state state)
 {
 	float dx = libinput_event_gesture_get_dx(gesture);
-	float last_cumulative_dx = state.s.swipe.cumulative_dx;
 	state.s.swipe.cumulative_dx+= dx;
 
 	float dy = libinput_event_gesture_get_dy(gesture);
-	float last_cumulative_dy = state.s.swipe.cumulative_dy;
 	state.s.swipe.cumulative_dy+= dy;
 
 	return state;
