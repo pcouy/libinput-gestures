@@ -12,6 +12,7 @@
 #include <string.h>
 #include <libinput.h>
 #include <errno.h>
+#include <math.h>
 
 #include "libinput-gestures.h"
 #include "config.h"
@@ -147,7 +148,10 @@ struct event_state handle_swipe_end(struct libinput_event_gesture *gesture, stru
 {
 	print_gesture(gesture);
 	printf("Cumulative dx=%f dy=%f (started at %d)\n", state.s.swipe.cumulative_dx, state.s.swipe.cumulative_dy, state.start_time);
-    call_action(SWIPE, libinput_event_gesture_get_finger_count(gesture), ON_END);
+
+    struct swipe_descriptor desc = get_swipe_desriptor(state);
+
+    call_action(SWIPE, libinput_event_gesture_get_finger_count(gesture), ON_END, get_duration(gesture, state), desc.direction, desc.amount);
 	return new_state();
 }
 
@@ -155,19 +159,49 @@ struct event_state handle_pinch_end(struct libinput_event_gesture *gesture, stru
 {
 	print_gesture(gesture);
 	printf("Final scale = %f (started at %d)\n", state.s.pinch.last_scale, state.start_time);
-    call_action(PINCH, libinput_event_gesture_get_finger_count(gesture), ON_END);
+
+    call_action(PINCH, libinput_event_gesture_get_finger_count(gesture), ON_END, get_duration(gesture, state), NONE, state.s.pinch.last_scale);
 	return new_state();
 }
 
 struct event_state handle_hold_end(struct libinput_event_gesture *gesture, struct event_state state)
 {
-    call_action(HOLD, libinput_event_gesture_get_finger_count(gesture), ON_END);
+    call_action(HOLD, libinput_event_gesture_get_finger_count(gesture), ON_END, get_duration(gesture, state), NONE, 0);
 	return new_state();
 }
 
-void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type)
+uint32_t get_duration(struct libinput_event_gesture *gesture, struct event_state state)
 {
-    struct action *action = match_action(gesture_type, fingers, action_type);
+    return libinput_event_gesture_get_time(gesture) - state.start_time; 
+}
+
+struct swipe_descriptor get_swipe_desriptor(struct event_state state)
+{
+    enum swipe_direction direction = NONE;
+    float amount = 0;
+    if (fabs(state.s.swipe.cumulative_dx) > fabs(state.s.swipe.cumulative_dy)) {
+        if (state.s.swipe.cumulative_dx > 0) {
+            direction = RIGHT;
+        } else {
+            direction = LEFT;
+        }
+        amount = fabs(state.s.swipe.cumulative_dx);
+    } else {
+        if (state.s.swipe.cumulative_dy > 0) {
+            direction = DOWN;
+        } else {
+            direction = UP;
+        }
+        amount = fabs(state.s.swipe.cumulative_dy);
+    }
+
+    struct swipe_descriptor descriptor = {direction, amount};
+    return descriptor;
+}
+
+void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount)
+{
+    struct action *action = match_action(gesture_type, fingers, action_type, duration, direction, amount);
     if (action != NULL) {
         const char **args = (const char**)action->cmd;
         #ifdef DEBUG
@@ -187,7 +221,7 @@ void call_action(enum gesture_type gesture_type, int fingers, enum action_type a
     }
 }
 
-struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type)
+struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount)
 {
     int actions_len = sizeof(user_actions)/sizeof(struct action);
     int i = 0;
@@ -196,12 +230,36 @@ struct action* match_action(enum gesture_type gesture_type, int fingers, enum ac
         action = user_actions[i];
         if (action.gesture == gesture_type &&
                 action.fingers == fingers &&
-                action.type == action_type
+                action.type == action_type &&
+                (direction == NONE ||
+                    action.swipe_direction == NONE ||
+                    action.swipe_direction == direction
+                ) &&
+                (action.config.min_duration <= 0 || action.config.min_duration <= duration) &&
+                (action.config.max_duration <= 0 || action.config.max_duration >= duration) &&
+                check_threshold(gesture_type, action, amount)
         ) {
             return (struct action*)&user_actions[i];
         }
     }
     return NULL;
+}
+
+int check_threshold(enum gesture_type gesture_type, struct action action, float amount)
+{
+    if (action.config.threshold == 0) return 1;
+
+    if (gesture_type == SWIPE) {
+        return (amount >= action.config.threshold);
+    } else if (gesture_type == PINCH) {
+        if (action.config.threshold < 1) {
+            return (amount <= action.config.threshold);
+        } else {
+            return (amount >= action.config.threshold);
+        }
+    } else {
+        return 1;
+    }
 }
 
 void spawn(const char **args)

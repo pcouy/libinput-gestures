@@ -27,6 +27,7 @@ struct event_state handle_pinch_end(struct libinput_event_gesture *gesture, stru
 struct event_state handle_hold_end(struct libinput_event_gesture *gesture, struct event_state state);
 void monitor_events();
 struct gesture_breakdown gesture_to_breakdown(struct libinput_event_gesture *gesture);
+uint32_t get_duration(struct libinput_event_gesture *gesture, struct event_state state);
 
 enum gesture_type {
 	ERR_TYPE,
@@ -48,11 +49,20 @@ struct gesture_breakdown {
 	enum gesture_step step;
 };
 
+enum swipe_direction {
+    UP, DOWN, LEFT, RIGHT, NONE
+};
+
 struct swipe_state {
 	float cumulative_dx;
 	float cumulative_dy;
 	float last_x_threshold;
 	float last_y_threshold;
+};
+
+struct swipe_descriptor {
+    enum swipe_direction direction;
+    float amount;
 };
 
 struct pinch_state {
@@ -79,13 +89,23 @@ enum action_type {
 	ON_THRESHOLD,
 };
 
+struct action_config {
+    float threshold;
+    uint32_t min_duration;
+    uint32_t max_duration;
+};
+
 struct action {
 	enum gesture_type gesture;
+    enum swipe_direction swipe_direction;
 	int fingers;
 	enum action_type type;
+    struct action_config config;
 	const void *cmd;
 };
 
-void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type);
-struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type);
+void call_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t start_time, enum swipe_direction direction, float amount);
+struct action* match_action(enum gesture_type gesture_type, int fingers, enum action_type action_type, uint32_t duration, enum swipe_direction direction, float amount);
+int check_threshold(enum gesture_type gesture_type, struct action action, float amount);
+struct swipe_descriptor get_swipe_desriptor(struct event_state state);
 #endif
