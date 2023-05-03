@@ -1,14 +1,11 @@
 # `libinput-gesture`
 
-This work is inspired by the [Python version of
-`libinput-gesture`](https://github.com/bulletmark/libinput-gestures). This is
-still a work in progress.
+This work is inspired by the [Python version of `libinput-gesture`](https://github.com/bulletmark/libinput-gestures).
+This is still a work in progress.
 
 ## Motivation
 
-From the [Python version's
-README](https://github.com/bulletmark/libinput-gestures/blob/master/README.md#installation)
-: 
+From the [Python version's README](https://github.com/bulletmark/libinput-gestures/blob/master/README.md#installation) : 
 
 > You **must be a member of the _input_ group** to have permission to read the
 > touchpad device:
