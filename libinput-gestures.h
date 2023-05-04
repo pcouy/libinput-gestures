@@ -104,8 +104,10 @@ struct trigger {
 	const void *cmd;
 };
 
-void call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t start_time, enum swipe_direction direction, float amount);
+struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t start_time, enum swipe_direction direction, float amount);
 struct trigger* match_trigger(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount);
 int check_threshold(enum gesture_type gesture_type, struct trigger trigger, float amount);
 struct swipe_descriptor get_swipe_desriptor(struct event_state state);
+struct pinch_state new_pinch_state();
+struct swipe_state new_swipe_state();
 #endif

@@ -99,6 +99,19 @@ struct event_state handle_event(struct libinput_event *event, struct event_state
 		}
 		state.start_time = libinput_event_gesture_get_time(gesture);
 		state.event_type = breakdown.type;
+        switch (state.event_type) {
+            case SWIPE:
+                state.s.swipe = new_swipe_state();
+                break;
+            case PINCH:
+                state.s.pinch = new_pinch_state();
+                break;
+            case HOLD:
+                break;
+            case ERR_TYPE:
+                printf("Error with the beginning event type");
+                break;
+        }
 		return state;
 	}
 	if (breakdown.type != state.event_type) {
@@ -134,6 +147,28 @@ struct event_state handle_swipe_update(struct libinput_event_gesture *gesture, s
 
 	float dy = libinput_event_gesture_get_dy(gesture);
 	state.s.swipe.cumulative_dy+= dy;
+
+    struct trigger *matched_trigger = NULL;
+    struct swipe_descriptor desc = get_swipe_desriptor(state);
+    if (state.s.swipe.last_x_threshold == 0 || state.s.swipe.last_y_threshold == 0) {
+        matched_trigger = call_action(
+            SWIPE,
+            libinput_event_gesture_get_finger_count(gesture),
+            ON_THRESHOLD,
+            get_duration(gesture, state),
+            desc.direction,
+            desc.amount
+        );
+    }
+
+    if (matched_trigger == NULL) {
+        // TODO : REPEAT events
+    }
+
+    if (matched_trigger != NULL) {
+        state.s.swipe.last_x_threshold = state.s.swipe.cumulative_dx;
+        state.s.swipe.last_y_threshold = state.s.swipe.cumulative_dy;
+    }
 
 	return state;
 }
@@ -199,7 +234,8 @@ struct swipe_descriptor get_swipe_desriptor(struct event_state state)
     return descriptor;
 }
 
-void call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
+struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
+// Returns the matched trigger
 {
     struct trigger *trigger = match_trigger(gesture_type, fingers, trigger_type, duration, direction, amount);
     if (trigger != NULL) {
@@ -219,6 +255,7 @@ void call_action(enum gesture_type gesture_type, int fingers, enum trigger_type 
         #endif
         spawn(args);
     }
+    return trigger;
 }
 
 struct trigger* match_trigger(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
@@ -288,6 +325,26 @@ struct event_state new_state()
 		.s.not_initialised = 1,
 	};
 	return s;
+}
+
+struct pinch_state new_pinch_state()
+{
+    struct pinch_state s = {
+        .last_scale = 1,
+        .last_threshold = 1,
+    };
+    return s;
+}
+
+struct swipe_state new_swipe_state()
+{
+    struct swipe_state s = {
+        .cumulative_dx = 0,
+        .cumulative_dy = 0,
+        .last_x_threshold = 0,
+        .last_y_threshold = 0,
+    };
+    return s;
 }
 
 void try_input_sgid() {
