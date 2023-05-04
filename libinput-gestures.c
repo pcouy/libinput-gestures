@@ -149,7 +149,7 @@ struct event_state handle_swipe_update(struct libinput_event_gesture *gesture, s
 	state.s.swipe.cumulative_dy+= dy;
 
     struct trigger *matched_trigger = NULL;
-    struct swipe_descriptor desc = get_swipe_desriptor(state);
+    struct swipe_descriptor desc = get_swipe_desriptor(state, 0, 0);
     if (state.s.swipe.last_x_threshold == 0 || state.s.swipe.last_y_threshold == 0) {
         matched_trigger = call_action(
             SWIPE,
@@ -162,7 +162,15 @@ struct event_state handle_swipe_update(struct libinput_event_gesture *gesture, s
     }
 
     if (matched_trigger == NULL) {
-        // TODO : REPEAT events
+        desc = get_swipe_desriptor(state, state.s.swipe.last_x_threshold, state.s.swipe.last_y_threshold);
+        matched_trigger = call_action(
+            SWIPE,
+            libinput_event_gesture_get_finger_count(gesture),
+            REPEAT,
+            get_duration(gesture, state),
+            desc.direction,
+            desc.amount
+        );
     }
 
     if (matched_trigger != NULL) {
@@ -212,7 +220,7 @@ struct event_state handle_swipe_end(struct libinput_event_gesture *gesture, stru
 	print_gesture(gesture);
 	printf("Cumulative dx=%f dy=%f (started at %d)\n", state.s.swipe.cumulative_dx, state.s.swipe.cumulative_dy, state.start_time);
 
-    struct swipe_descriptor desc = get_swipe_desriptor(state);
+    struct swipe_descriptor desc = get_swipe_desriptor(state, 0, 0);
 
     call_action(SWIPE, libinput_event_gesture_get_finger_count(gesture), ON_END, get_duration(gesture, state), desc.direction, desc.amount);
 	return new_state();
@@ -238,24 +246,26 @@ uint32_t get_duration(struct libinput_event_gesture *gesture, struct event_state
     return libinput_event_gesture_get_time(gesture) - state.start_time; 
 }
 
-struct swipe_descriptor get_swipe_desriptor(struct event_state state)
+struct swipe_descriptor get_swipe_desriptor(struct event_state state, float origin_x, float origin_y)
 {
     enum swipe_direction direction = NONE;
     float amount = 0;
-    if (fabs(state.s.swipe.cumulative_dx) > fabs(state.s.swipe.cumulative_dy)) {
-        if (state.s.swipe.cumulative_dx > 0) {
+    float dx = state.s.swipe.cumulative_dx - origin_x;
+    float dy = state.s.swipe.cumulative_dy - origin_y;
+    if (fabs(dx) > fabs(dy)) {
+        if (dx > 0) {
             direction = RIGHT;
         } else {
             direction = LEFT;
         }
-        amount = fabs(state.s.swipe.cumulative_dx);
+        amount = fabs(dx);
     } else {
-        if (state.s.swipe.cumulative_dy > 0) {
+        if (dy > 0) {
             direction = DOWN;
         } else {
             direction = UP;
         }
-        amount = fabs(state.s.swipe.cumulative_dy);
+        amount = fabs(dy);
     }
 
     struct swipe_descriptor descriptor = {direction, amount};
