@@ -176,6 +176,27 @@ struct event_state handle_swipe_update(struct libinput_event_gesture *gesture, s
 struct event_state handle_pinch_update(struct libinput_event_gesture *gesture, struct event_state state)
 {
 	state.s.pinch.last_scale = libinput_event_gesture_get_scale(gesture);
+
+    struct trigger *matched_trigger = NULL;
+    if(state.s.pinch.last_threshold == 1) {
+        matched_trigger = call_action(
+            PINCH,
+            libinput_event_gesture_get_finger_count(gesture),
+            ON_THRESHOLD,
+            get_duration(gesture, state),
+            NONE,
+            state.s.pinch.last_scale
+        );
+    }
+
+    if (matched_trigger == NULL) {
+        // TODO : REPEAT events
+    }
+
+    if (matched_trigger != NULL) {
+        state.s.pinch.last_threshold = state.s.pinch.last_scale;
+    }
+
 	return state;
 }
 
