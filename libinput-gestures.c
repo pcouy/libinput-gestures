@@ -190,7 +190,14 @@ struct event_state handle_pinch_update(struct libinput_event_gesture *gesture, s
     }
 
     if (matched_trigger == NULL) {
-        // TODO : REPEAT events
+        matched_trigger = call_action(
+            PINCH,
+            libinput_event_gesture_get_finger_count(gesture),
+            REPEAT,
+            get_duration(gesture, state),
+            NONE,
+            state.s.pinch.last_scale / state.s.pinch.last_threshold
+        );
     }
 
     if (matched_trigger != NULL) {
