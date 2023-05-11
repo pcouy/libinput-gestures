@@ -1,6 +1,6 @@
-# `libinput-gesture`
+# `libinput-gestures`
 
-This work is inspired by the [Python version of `libinput-gesture`](https://github.com/bulletmark/libinput-gestures).
+This work is inspired by the [Python version of `libinput-gestures`](https://github.com/bulletmark/libinput-gestures).
 This is still a work in progress.
 
 ## Motivation
