@@ -12,8 +12,8 @@
 # General Public License at <http://www.gnu.org/licenses/> for more
 # details.
 
-libinput-gestures: libinput-gestures.c libinput-gestures.h config.h
-	gcc libinput-gestures.c -o libinput-gestures `pkg-config --cflags --libs libinput libudev`
+libinput-gestures: libinput-gestures.c libinput-gestures.h config.c config.h
+	gcc -g libinput-gestures.c config.c libcyaml/build/release/libcyaml.a -I libcyaml/include -o libinput-gestures `pkg-config --cflags --libs libinput libudev yaml-0.1`
 	sudo chown root:input libinput-gestures
 	sudo chmod g+s libinput-gestures
 	sudo chmod u+s libinput-gestures

@@ -1,0 +1,50 @@
+trigger_configs:
+  - name: default
+  - name: swipe_threshold
+    config:
+      threshold: 50
+  - name: pinch_out
+    config:
+      threshold: 1.2
+  - name: pinch_in
+    config:
+      threshold: 0.75
+
+triggers:
+  - type: swipe
+    direction: left
+    fingers: 3
+    trigger_on: end
+    config: default
+    command:
+      - notify-send
+      - Test yaml swipe left
+  - type: swipe
+    direction: right
+    fingers: 3
+    trigger_on: end
+    config: default
+    command:
+      - notify-send
+      - Test yaml swipe right
+  - type: swipe
+    fingers: 3
+    trigger_on: end
+    config: swipe_threshold
+    command:
+      - notify-send
+      - Test yaml swipe vertical
+  - type: pinch
+    fingers: 2
+    trigger_on: end
+    config: pinch_out
+    command:
+      - notify-send
+      - Test yaml pinch out 2 end
+  - type: pinch
+    fingers: 2
+    trigger_on: end
+    config: pinch_in
+    command:
+      - notify-send
+      - Test yaml pinch in 2 end
