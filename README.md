@@ -39,7 +39,7 @@ features :
 - Handles pinch in and out
 - Handles gesture thresholds and timeouts
 
-After cloning the repo, `cd` into it and edit `config.h`. `make
+After cloning the repo, `cd` into it and build the executable. `make
 libinput-gestures` builds the executable and changes the permissions on it to
 enable `setgid(...)` (requires root privileges, you will be prompted via
 `sudo`). Running the program **does _NOT_ require you to add your user to the
@@ -47,13 +47,84 @@ enable `setgid(...)` (requires root privileges, you will be prompted via
 
 ### Configuration
 
-For now, configuration is done through editing the `config.h` file and re-building the project (inspired by what's done in many [suckless](https://suckless.org/) projects). I plan on supporting runtime configuration files later.
+Configuration is done through the `config.yaml` file. This file has two main sections :
 
-The provided `config.h` file contains comments to show the expected syntax. Configuration makes intensive use of the enums and structures defined in `libinput-gestures.h`
+`trigger_configs` lets you define named gesture configuration in the following format :
+
+```yaml
+trigger_configs:
+  - name: default
+  - name: swipe_threshold
+    config:
+      threshold: 50
+  - name: swipe_timeout
+    config:
+      threshold: 50
+      min_duration: 0     # No minimum duration for detecting the gesture
+      max_duration: 3000  # The gesture will timeout 3s after being started
+  - name: pinch_out
+    config:
+      threshold: 1.2
+  - name: pinch_in
+    config:
+      threshold: 0.75
+```
+
+All values for the `config` parts are optional (as well as the config part itself). If omitted, parameters will default to 0.
+
+`triggers` defines the conditions for triggering actions and the corresponding actions :
+
+```yaml
+triggers:
+  - type: swipe
+    direction: left
+    fingers: 3
+    trigger_on: end
+    config: default
+    command:
+      - notify-send
+      - Test yaml swipe left
+  - type: swipe
+    direction: right
+    fingers: 3
+    trigger_on: end
+    config: default
+    command:
+      - notify-send
+      - Test yaml swipe right
+  - type: swipe
+    fingers: 3
+    trigger_on: end
+    config: swipe_threshold
+    command:
+      - notify-send
+      - Test yaml swipe vertical
+  - type: pinch
+    fingers: 2
+    trigger_on: end
+    config: pinch_out
+    command:
+      - notify-send
+      - Test yaml pinch out 2 end
+  - type: pinch
+    fingers: 2
+    trigger_on: end
+    config: pinch_in
+    command:
+      - notify-send
+      - Test yaml pinch in 2 end
+```
+
+Each trigger has the follwing fields :
+
+- `type` (required) : `swipe` or `pinch`
+- `fingers` (required) : integer
+- `trigger_on` (required) : `end` or `threshold` or `repeat`
+- `direction` (optional): `none` (default) or `left` or `right` or `up` or `down`. Only used for swipe gestures, not used for pinch gestures. `none` matches any direction when used with swipe gestures.
+- `config` (required) : string matching the name of a config from the `trigger_configs` section
+- `command` (required) : list of args for the command to run when this trigger is matched (the 1st is the command name)
 
 ## TODO notes
 
 - Triggers that are not external program calls
-- Look into supporting python version's config files
-- OR Look into [libcyaml](https://github.com/tlsa/libcyaml/blob/main/docs/guide.md) for config files
 - Clean seat detection ?

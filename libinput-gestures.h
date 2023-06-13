@@ -4,9 +4,6 @@
 
 #include <libinput.h>
 
-// Used in config.h
-#define CMD(...) (const char*[]){__VA_ARGS__, NULL}
-
 struct gesture_breakdown;
 
 void try_input_sgid();
@@ -50,7 +47,7 @@ struct gesture_breakdown {
 };
 
 enum swipe_direction {
-    UP, DOWN, LEFT, RIGHT, NONE
+    NONE, UP, DOWN, LEFT, RIGHT,
 };
 
 struct swipe_state {
@@ -95,13 +92,19 @@ struct trigger_config {
     uint32_t max_duration;
 };
 
+struct command {
+    const char **args;
+    unsigned args_count;
+};
+
 struct trigger {
 	enum gesture_type gesture;
     enum swipe_direction swipe_direction;
 	int fingers;
 	enum trigger_type type;
+    char *config_name;
     struct trigger_config config;
-	const void *cmd;
+	struct command cmd;
 };
 
 struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t start_time, enum swipe_direction direction, float amount);

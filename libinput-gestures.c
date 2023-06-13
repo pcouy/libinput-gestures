@@ -17,7 +17,10 @@
 #include "libinput-gestures.h"
 #include "config.h"
 
+const struct full_config_t *all_triggers;
+
 int main(int argc, char* argv[]){
+    all_triggers = load_yaml();
 	printf("Rewrite of libinput-gestures using suid/sgid\n");
 	printf("\n");
 	printf("\tUsage : libinput-gestures-setgid [\"u\"|\"g\"]\n\n");
@@ -277,7 +280,11 @@ struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum tr
 {
     struct trigger *trigger = match_trigger(gesture_type, fingers, trigger_type, duration, direction, amount);
     if (trigger != NULL) {
-        const char **args = (const char**)trigger->cmd;
+        const char **args = malloc(sizeof(char*) * (trigger->cmd.args_count + 1));
+        for (int i = 0; i<trigger->cmd.args_count; i++) {
+            args[i] = (const char*)trigger->cmd.args[i];
+        }
+        args[trigger->cmd.args_count] = NULL;
         #ifdef DEBUG
             printf("Matched trigger : ");
             char *arg = NULL;
@@ -296,13 +303,15 @@ struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum tr
         } else {
             spawn(args);
         }
+        free(args);
     }
     return trigger;
 }
 
 struct trigger* match_trigger(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t duration, enum swipe_direction direction, float amount)
 {
-    int triggers_len = sizeof(user_triggers)/sizeof(struct trigger);
+    struct trigger *user_triggers = all_triggers->triggers;
+    int triggers_len = all_triggers->triggers_count;
     int i = 0;
     struct trigger trigger;
     for (i=0 ; i<triggers_len; i++) {
