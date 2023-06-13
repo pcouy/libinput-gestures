@@ -27,23 +27,23 @@ struct gesture_breakdown gesture_to_breakdown(struct libinput_event_gesture *ges
 uint32_t get_duration(struct libinput_event_gesture *gesture, struct event_state state);
 
 enum gesture_type {
-	ERR_TYPE,
-	SWIPE,
-	PINCH,
-	HOLD,
+    ERR_TYPE,
+    SWIPE,
+    PINCH,
+    HOLD,
 };
 
 enum gesture_step {
-	ERR_STEP,
-	BEGIN,
-	UPDATE,
-	END,
-	CANCEL,
+    ERR_STEP,
+    BEGIN,
+    UPDATE,
+    END,
+    CANCEL,
 };
 
 struct gesture_breakdown {
-	enum gesture_type type;
-	enum gesture_step step;
+    enum gesture_type type;
+    enum gesture_step step;
 };
 
 enum swipe_direction {
@@ -51,10 +51,10 @@ enum swipe_direction {
 };
 
 struct swipe_state {
-	float cumulative_dx;
-	float cumulative_dy;
-	float last_x_threshold;
-	float last_y_threshold;
+    float cumulative_dx;
+    float cumulative_dy;
+    float last_x_threshold;
+    float last_y_threshold;
 };
 
 struct swipe_descriptor {
@@ -63,27 +63,27 @@ struct swipe_descriptor {
 };
 
 struct pinch_state {
-	float last_scale;
-	float last_threshold;
+    float last_scale;
+    float last_threshold;
 };
 
 union event_inner_state {
-	int not_initialised;
-	struct swipe_state swipe;
-	struct pinch_state pinch;
+    int not_initialised;
+    struct swipe_state swipe;
+    struct pinch_state pinch;
 };
 
 struct event_state {
-	enum gesture_type event_type;
-	uint32_t start_time;
-	union event_inner_state s;
+    enum gesture_type event_type;
+    uint32_t start_time;
+    union event_inner_state s;
 };
 
 enum trigger_type {
-	ERR_TRIGGER_TYPE,
-	REPEAT,
-	ON_END,
-	ON_THRESHOLD,
+    ERR_TRIGGER_TYPE,
+    REPEAT,
+    ON_END,
+    ON_THRESHOLD,
 };
 
 struct trigger_config {
@@ -98,13 +98,13 @@ struct command {
 };
 
 struct trigger {
-	enum gesture_type gesture;
+    enum gesture_type gesture;
     enum swipe_direction swipe_direction;
-	int fingers;
-	enum trigger_type type;
+    int fingers;
+    enum trigger_type type;
     char *config_name;
     struct trigger_config config;
-	struct command cmd;
+    struct command cmd;
 };
 
 struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum trigger_type trigger_type, uint32_t start_time, enum swipe_direction direction, float amount);

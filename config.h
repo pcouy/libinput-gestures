@@ -8,7 +8,7 @@
 
 /* Schema for string pointer values (used in sequences of strings). */
 static const cyaml_schema_value_t string_ptr_schema = {
-	CYAML_VALUE_STRING(CYAML_FLAG_POINTER, char, 0, CYAML_UNLIMITED),
+    CYAML_VALUE_STRING(CYAML_FLAG_POINTER, char, 0, CYAML_UNLIMITED),
 };
 
 // Enum mappings to yaml string values
