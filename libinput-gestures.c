@@ -291,7 +291,11 @@ struct trigger* call_action(enum gesture_type gesture_type, int fingers, enum tr
             } while (arg != NULL);
             printf("\n");
         #endif
-        spawn(args);
+        if(strcmp(args[0], "sendkeys") == 0) {
+            printf("TODO: sendkeys\n");
+        } else {
+            spawn(args);
+        }
     }
     return trigger;
 }
@@ -393,7 +397,7 @@ void try_input_sgid() {
 	} else {
 		printf("Successfully set gid to input group (id=%d)\n", gid);
         if (seteuid(getuid()) != 0) { // Restore euid
-            printf("Could not restore euid to original uid, this max cause problems for spawning commands\n");
+            printf("Could not restore euid to original uid, this may cause problems for spawning commands\n");
         }
 	}
 }

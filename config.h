@@ -27,4 +27,6 @@ static const struct trigger user_triggers[] = {
     {PINCH, NONE, 2, ON_END, CATCH_ALL_CONFIG, CMD("notify-send", "catchall-pinch")},
     {PINCH, NONE, 2, ON_THRESHOLD, PINCH_IN_CONFIG, CMD("notify-send", "catchall-pinch-in-threshold")},
     {PINCH, NONE, 2, REPEAT, PINCH_OUT_CONFIG, CMD("notify-send", "catchall-pinch-out-repeat")},
+
+    {SWIPE, NONE, 4, ON_END, CATCH_ALL_CONFIG, CMD("sendkeys", "catchall-swipe")},
 };

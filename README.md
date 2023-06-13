@@ -50,3 +50,10 @@ enable `setgid(...)` (requires root privileges, you will be prompted via
 For now, configuration is done through editing the `config.h` file and re-building the project (inspired by what's done in many [suckless](https://suckless.org/) projects). I plan on supporting runtime configuration files later.
 
 The provided `config.h` file contains comments to show the expected syntax. Configuration makes intensive use of the enums and structures defined in `libinput-gestures.h`
+
+## TODO notes
+
+- Triggers that are not external program calls
+- Look into supporting python version's config files
+- OR Look into [libcyaml](https://github.com/tlsa/libcyaml/blob/main/docs/guide.md) for config files
+- Clean seat detection ?
