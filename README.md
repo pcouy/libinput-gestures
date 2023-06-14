@@ -47,7 +47,14 @@ enable `setgid(...)` (requires root privileges, you will be prompted via
 
 ### Configuration
 
-Configuration is done through the `config.yaml` file. This file has two main sections :
+The program tries to load a configuration file from the following locations (in decreasing order of priority) :
+
+- The first argument to the program if supplied
+- `config.yaml` in the running dir
+- `$HOME/.config/libinput-gestures.yaml`
+- `/etc/libinput-gestures.yaml`
+
+When there is an error reading a file (including syntax errors or non-existing file), the program reports the error and skips to the next file in the list. It stops on the first successful configuration load.
 
 `trigger_configs` lets you define named gesture configuration in the following format :
 
@@ -115,7 +122,7 @@ triggers:
       - Test yaml pinch in 2 end
 ```
 
-Each trigger has the follwing fields :
+Each trigger has the following fields :
 
 - `type` (required) : `swipe` or `pinch`
 - `fingers` (required) : integer

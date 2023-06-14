@@ -17,23 +17,66 @@ triggers:
     trigger_on: end
     config: default
     command:
-      - notify-send
-      - Test yaml swipe left
+      - i3-msg
+      - focus left
   - type: swipe
     direction: right
     fingers: 3
     trigger_on: end
     config: default
     command:
-      - notify-send
-      - Test yaml swipe right
+      - i3-msg
+      - focus right
   - type: swipe
+    direction: up
     fingers: 3
     trigger_on: end
     config: swipe_threshold
     command:
-      - notify-send
-      - Test yaml swipe vertical
+      - i3-msg
+      - focus up
+  - type: swipe
+    direction: down
+    fingers: 3
+    trigger_on: end
+    config: swipe_threshold
+    command:
+      - i3-msg
+      - focus down
+  - type: swipe
+    direction: up
+    fingers: 4
+    trigger_on: end
+    config: swipe_threshold
+    command:
+      - i3-msg
+      - fullscreen enable
+  - type: swipe
+    direction: down
+    fingers: 4
+    trigger_on: end
+    config: swipe_threshold
+    command:
+      - i3-msg
+      - fullscreen disable
+  - type: swipe
+    direction: left
+    fingers: 4
+    trigger_on: repeat
+    config: swipe_threshold
+    command:
+      - xdotool
+      - key
+      - ctrl+shift+Tab
+  - type: swipe
+    direction: right
+    fingers: 4
+    trigger_on: repeat
+    config: swipe_threshold
+    command:
+      - xdotool
+      - key
+      - ctrl+Tab
   - type: pinch
     fingers: 2
     trigger_on: end
