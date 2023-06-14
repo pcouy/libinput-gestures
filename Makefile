@@ -8,7 +8,6 @@ BUILD_DEPS := libinput-gestures.c libinput-gestures.h config.c config.h libcyaml
 
 libinput-gestures: $(BUILD_DEPS)
 	gcc $(GCC_ARGS)
-	$(MAKE) permissions
 
 .PHONY: debug
 debug: $(BUILD_DEPS)
@@ -16,11 +15,14 @@ debug: $(BUILD_DEPS)
 	$(MAKE) permissions
 
 .PHONY: permissions
-permissions:
+dev-permissions:
 	sudo chown root:input libinput-gestures
 	sudo chmod g+s libinput-gestures
 	sudo chmod u+s libinput-gestures
 	sudo chmod o+w libinput-gestures
+
+.PHONY: dev
+dev: libinput-gestures dev-permissions
 
 install: libinput-gestures
 	install -d $(DESTDIR)$(PREFIX)/bin/
