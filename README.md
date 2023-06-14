@@ -128,3 +128,4 @@ Each trigger has the follwing fields :
 
 - Triggers that are not external program calls
 - Clean seat detection ?
+- Install config file in `make install`
