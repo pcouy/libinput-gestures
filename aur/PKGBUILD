@@ -8,11 +8,11 @@
 
 # Maintainer: Your Name <youremail@domain.com>
 pkgname=libinput-gestures-ng-git # '-bzr', '-git', '-hg' or '-svn'
-pkgver=VERSION
+pkgver=r28.3802d39
 pkgrel=1
 pkgdesc="Rewrite of \`libinput-gestures\` in C, using sgid"
 arch=("any")
-url=""
+url="https://github.com/pcouy/libinput-gestures"
 license=('GPL')
 groups=()
 depends=()
