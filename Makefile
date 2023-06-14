@@ -34,7 +34,12 @@ install: libinput-gestures
 libcyaml:
 	$(MAKE) -C libcyaml
 
+.PHONY: arch-package
+arch-package:
+	cd aur && makepkg -f
+
 .PHONY: clean
 clean:
 	rm -f libinput-gestures
+	cd aur && rm -rf libcyaml libinput-gestures-ng-git *.pkg.tar.xz pkg src
 	$(MAKE) -C libcyaml clean
