@@ -17,19 +17,15 @@
 #include "libinput-gestures.h"
 #include "config.h"
 
-const struct full_config_t *all_triggers;
+struct full_config_t *all_triggers;
 
 int main(int argc, char* argv[]){
-    all_triggers = load_yaml();
-    printf("Rewrite of libinput-gestures using suid/sgid\n");
+    all_triggers = find_and_load_yaml(argc, argv);
+    printf("Rewrite of libinput-gestures using sgid\n");
     printf("\n");
-    printf("\tUsage : libinput-gestures-setgid [\"u\"|\"g\"]\n\n");
+    printf("\tUsage : libinput-gestures [yaml_config_file]\n\n");
 
-    if (argc >= 2 && strcmp(argv[1], "u") == 0) {
-        try_root_suid();
-    } else {
-        try_input_sgid();
-    }
+    try_input_sgid();
 
     monitor_events();
 
@@ -47,7 +43,7 @@ void monitor_events()
     struct libinput_event *event;
     struct timespec sleep_delay = {
         .tv_sec = 0,
-        .tv_nsec = 500 * 1000,
+        .tv_nsec = 1000 /*usec*/ * 1000 /*msec*/ * 10,
     };
     struct event_state state;
 
@@ -408,16 +404,6 @@ void try_input_sgid() {
         if (seteuid(getuid()) != 0) { // Restore euid
             printf("Could not restore euid to original uid, this may cause problems for spawning commands\n");
         }
-    }
-}
-
-void try_root_suid() {
-    uid_t uid = 0;
-
-    if (setuid(uid) != 0){
-        printf("Could not set uid to 0\n");
-    } else {
-        printf("Successfully set uid to 0\n");
     }
 }
 

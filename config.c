@@ -5,7 +5,45 @@
 #include "libcyaml/include/cyaml/cyaml.h"
 #include "libinput-gestures.h"
 
-struct full_config_t* load_yaml()
+struct full_config_t* find_and_load_yaml(int argc, char* argv[])
+{
+    struct full_config_t *all_triggers;
+    if (argc >= 2) {
+        all_triggers = load_yaml(argv[1]);
+    } else {
+        all_triggers = NULL;
+    }
+
+    if (all_triggers == NULL) {
+        all_triggers = load_yaml("config.yaml");
+    }
+    if (all_triggers == NULL) {
+        char *home = getenv("HOME");
+        if (home != NULL) {
+            int home_len = strlen(home);
+            char *inside_path = "/.config/libinput-gestures.yaml";
+            int inside_len = strlen(inside_path);
+            if (home_len + inside_len < 250) {
+                char user_path[255];
+                snprintf(user_path, 255, "%s%s", home, inside_path);
+                all_triggers = load_yaml(user_path);
+            }
+        }
+    }
+    if (all_triggers == NULL) {
+        all_triggers = load_yaml("/etc/libinput-gestures.yaml");
+    }
+    if (all_triggers == NULL) {
+        all_triggers = malloc(sizeof(struct full_config_t));
+        all_triggers->triggers_count = 0;
+        all_triggers->trigger_configs_count = 0;
+        all_triggers->triggers = NULL;
+        all_triggers->trigger_configs = NULL;
+    }
+    return all_triggers;
+}
+
+struct full_config_t* load_yaml(char* yaml_file)
 {
     struct full_config_t *all_triggers;
     const cyaml_config_t cyaml_conf = {
@@ -13,9 +51,10 @@ struct full_config_t* load_yaml()
         .mem_fn = cyaml_mem,
         .log_level = CYAML_LOG_WARNING,
     };
-    cyaml_err_t err = cyaml_load_file("config.yaml", &cyaml_conf, &all_triggers_schema, (void **) &all_triggers, NULL);
+    printf("Reading config from '%s'\n", yaml_file);
+    cyaml_err_t err = cyaml_load_file(yaml_file, &cyaml_conf, &all_triggers_schema, (void **) &all_triggers, NULL);
     if (err != CYAML_OK) {
-        fprintf(stderr, "ERROR: %s\n", cyaml_strerror(err));
+        fprintf(stderr, "ERROR (reading '%s') : %s\n", yaml_file, cyaml_strerror(err));
         return NULL;
     }
 
@@ -35,7 +74,7 @@ struct full_config_t* load_yaml()
             }
         }
         if (!name_found) {
-            printf("ERROR : No trigger config named '%s' : using default of 0 for all values\n", trig.config_name);
+            printf("WARNING: No trigger config named '%s' : using default of 0 for all values\n", trig.config_name);
         }
     }
 

@@ -88,5 +88,6 @@ static const cyaml_schema_value_t all_triggers_schema = {
     CYAML_VALUE_MAPPING(CYAML_FLAG_POINTER, struct full_config_t, triggers_schema),
 };
 
-struct full_config_t* load_yaml();
+struct full_config_t* load_yaml(char* yaml_file);
+struct full_config_t* find_and_load_yaml(int argc, char* argv[]);
 #endif
