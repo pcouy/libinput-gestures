@@ -122,7 +122,7 @@ triggers:
       - Test yaml pinch in 2 end
 ```
 
-Each trigger has the follwing fields :
+Each trigger has the following fields :
 
 - `type` (required) : `swipe` or `pinch`
 - `fingers` (required) : integer
