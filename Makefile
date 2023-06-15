@@ -26,7 +26,7 @@ dev: libinput-gestures dev-permissions
 
 install: libinput-gestures
 	install -d $(DESTDIR)$(PREFIX)/bin/
-	install -m 2755 -o root -g root libinput-gestures $(DESTDIR)$(PREFIX)/bin/
+	install -m 2755 -o root -g root libinput-gestures $(DESTDIR)$(PREFIX)/sbin/
 	install -d $(DESTDIR)/etc/
 	install -m 644 -o root -g root -T config.yaml $(DESTDIR)/etc/libinput-gestures.yaml
 
@@ -41,5 +41,5 @@ arch-package:
 .PHONY: clean
 clean:
 	rm -f libinput-gestures
-	cd aur && rm -rf libcyaml libinput-gestures-ng-git *.pkg.tar.xz pkg src
+	cd aur && rm -rf libcyaml libinput-gestures-ng-git *.pkg.tar.* pkg src
 	$(MAKE) -C libcyaml clean
